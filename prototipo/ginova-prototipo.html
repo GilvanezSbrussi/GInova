@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GInova — Protótipo</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --paper:#F2EEE1;
+  --paper-dim:#E7E0CC;
+  --card:#FFFFFF;
+  --ink:#1E2A22;
+  --ink-soft:#5B6B5F;
+  --ink-faint:#8B9A8C;
+  --line: rgba(30,42,34,0.13);
+  --yellow:#EFB81D;
+  --yellow-ink:#5C4408;
+  --rose:#E2879E;
+  --rose-ink:#6B2439;
+  --green:#2F7A52;
+  --green-bg:#E4F0E6;
+  --red:#C1432E;
+  --red-bg:#F8E5DF;
+  --blue:#3D6FA8;
+  --blue-bg:#E4EBF3;
+  --radius:14px;
+  --shadow: 0 1px 2px rgba(30,42,34,0.06), 0 6px 20px -10px rgba(30,42,34,0.18);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Inter',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.display{
+  font-family:'Archivo',sans-serif;
+  font-weight:800;
+  letter-spacing:-0.01em;
+}
+.mono{font-family:'IBM Plex Mono',monospace;}
+
+/* faint paper texture */
+body{
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(30,42,34,0.05) 1px, transparent 0);
+  background-size: 22px 22px;
+}
+
+.app{
+  display:flex;
+  min-height:100vh;
+}
+
+/* ---------- SIDEBAR ---------- */
+.sidebar{
+  width:236px;
+  flex-shrink:0;
+  background:var(--ink);
+  color:#EDEAE0;
+  padding:22px 14px 14px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.brand{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  padding:4px 10px 22px;
+}
+.brand-mark{
+  width:26px;height:26px;
+  background:var(--yellow);
+  border-radius:6px;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:'Archivo',sans-serif;font-weight:800;font-size:14px;color:var(--yellow-ink);
+}
+.brand-name{font-family:'Archivo',sans-serif;font-weight:800;font-size:19px;color:#fff;}
+.brand-tag{font-size:10px;color:#9CA79C;text-transform:uppercase;letter-spacing:.08em;padding:0 10px 16px;}
+
+.navitem{
+  display:flex;align-items:center;gap:11px;
+  padding:10px 12px;
+  border-radius:10px;
+  color:#C7CDC3;
+  font-size:14.5px;font-weight:600;
+  cursor:pointer;
+  border:none;background:none;text-align:left;width:100%;
+  font-family:'Inter',sans-serif;
+}
+.navitem svg{width:18px;height:18px;flex-shrink:0;opacity:.85;}
+.navitem:hover{background:rgba(255,255,255,0.06);color:#fff;}
+.navitem.active{background:var(--yellow);color:var(--yellow-ink);}
+.navitem.active svg{opacity:1;}
+.navitem.disabled{opacity:.4;cursor:default;}
+.navitem.disabled:hover{background:none;color:#C7CDC3;}
+.navitem .soon{
+  margin-left:auto;font-size:9px;background:rgba(255,255,255,0.1);
+  padding:2px 6px;border-radius:20px;letter-spacing:.03em;
+}
+.nav-group-label{
+  font-size:10px;color:#7C8A7C;text-transform:uppercase;letter-spacing:.08em;
+  padding:16px 12px 6px;
+}
+.sidebar-foot{
+  margin-top:auto;padding:14px 10px 4px;
+  border-top:1px solid rgba(255,255,255,0.08);
+  font-size:11.5px;color:#8B9A8C;
+}
+
+/* ---------- MAIN ---------- */
+.main{
+  flex:1;
+  min-width:0;
+  padding:30px 40px 90px;
+}
+.topline{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  margin-bottom:22px;flex-wrap:wrap;gap:10px;
+}
+.eyebrow{
+  font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.09em;font-weight:600;
+}
+.pagetitle{font-size:26px;margin:2px 0 0;}
+.pagesub{color:var(--ink-soft);font-size:14px;margin-top:4px;}
+
+.view{display:none;}
+.view.active{display:block;}
+
+/* ---------- CARDS ---------- */
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  border:1px solid var(--line);
+  box-shadow:var(--shadow);
+}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.grid-2{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;}
+
+/* ticket / stub card — signature element */
+.ticket{
+  position:relative;
+  background:var(--card);
+  border-radius:10px;
+  border:1px solid var(--line);
+  box-shadow:var(--shadow);
+  padding:16px 18px;
+  overflow:visible;
+}
+.ticket::before, .ticket::after{
+  content:"";
+  position:absolute;
+  width:16px;height:16px;
+  background:var(--paper);
+  border-radius:50%;
+  top:50%;transform:translateY(-50%);
+  border:1px solid var(--line);
+}
+.ticket::before{left:-9px;}
+.ticket::after{right:-9px;}
+.ticket-perf{
+  border-top:1px dashed var(--line);
+  margin:12px -18px 12px;
+}
+
+.stat-ticket{padding:16px 16px 14px;}
+.stat-label{font-size:11.5px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+.stat-value{font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:600;margin-top:6px;}
+.stat-value.pos{color:var(--green);}
+.stat-value.neg{color:var(--red);}
+.stat-value.neu{color:var(--ink);}
+.stat-foot{font-size:12px;color:var(--ink-faint);margin-top:4px;}
+
+/* badges */
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px;
+}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.b-green{background:var(--green-bg);color:var(--green);}
+.b-red{background:var(--red-bg);color:var(--red);}
+.b-yellow{background:#FBF1D2;color:var(--yellow-ink);}
+.b-blue{background:var(--blue-bg);color:var(--blue);}
+.b-rose{background:#F8E3EA;color:var(--rose-ink);}
+.b-grey{background:#EDEAE0;color:var(--ink-soft);}
+
+/* alerts list */
+.alert-row{
+  display:flex;gap:11px;align-items:flex-start;
+  padding:12px 4px;border-bottom:1px solid var(--line);
+}
+.alert-row:last-child{border-bottom:none;}
+.alert-dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.alert-text{font-size:14px;line-height:1.4;}
+.alert-text b{font-weight:700;}
+.alert-meta{font-size:12px;color:var(--ink-faint);margin-top:2px;}
+
+/* buttons */
+.btn{
+  font-family:'Inter',sans-serif;
+  font-size:13.5px;font-weight:600;
+  padding:9px 15px;border-radius:9px;border:1px solid transparent;
+  cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+}
+.btn-primary{background:var(--ink);color:#fff;}
+.btn-primary:hover{background:#0f1712;}
+.btn-yellow{background:var(--yellow);color:var(--yellow-ink);}
+.btn-yellow:hover{filter:brightness(1.05);}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--ink);}
+.btn-ghost:hover{background:var(--paper-dim);}
+.btn-sm{padding:6px 11px;font-size:12.5px;border-radius:7px;}
+
+/* whatsapp detected card */
+.wa-card{
+  background:linear-gradient(135deg,#1E2A22,#25352A);
+  color:#fff;border-radius:14px;padding:18px 20px;
+  display:flex;justify-content:space-between;align-items:center;gap:20px;
+  margin-bottom:20px;flex-wrap:wrap;
+}
+.wa-left{display:flex;gap:14px;align-items:flex-start;}
+.wa-icon{
+  width:38px;height:38px;border-radius:10px;background:var(--yellow);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.wa-quote{
+  font-size:13px;color:#C7CDC3;font-style:italic;margin:2px 0 6px;
+}
+.wa-title{font-family:'Archivo',sans-serif;font-weight:800;font-size:15px;}
+.wa-sub{font-size:12.5px;color:#9CA79C;margin-top:2px;}
+.wa-actions{display:flex;gap:8px;flex-shrink:0;}
+
+/* tables */
+table{width:100%;border-collapse:collapse;}
+th{
+  text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--ink-faint);font-weight:600;padding:0 14px 10px;border-bottom:1px solid var(--line);
+}
+td{padding:13px 14px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr.clickable{cursor:pointer;}
+tr.clickable:hover td{background:var(--paper-dim);}
+.cell-name{font-weight:600;}
+.cell-sub{font-size:12px;color:var(--ink-faint);margin-top:1px;}
+
+/* section headers inside content */
+.section-head{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;
+}
+.section-head h3{font-size:15px;margin:0;}
+
+/* kanban (orçamentos) */
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.kcol-head{
+  font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--ink-soft);margin-bottom:10px;display:flex;justify-content:space-between;
+}
+.kcard{
+  background:var(--card);border:1px solid var(--line);border-radius:10px;
+  padding:12px 13px;margin-bottom:10px;box-shadow:var(--shadow);
+}
+.kcard .kname{font-weight:700;font-size:13.5px;}
+.kcard .kserv{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+.kcard .kval{font-family:'IBM Plex Mono',monospace;font-weight:600;margin-top:8px;font-size:14px;}
+.kcard .kmeta{font-size:11px;color:var(--ink-faint);margin-top:4px;}
+
+/* agenda timeline */
+.timeline{position:relative;padding-left:6px;}
+.tl-item{display:flex;gap:16px;padding:14px 0;border-bottom:1px solid var(--line);}
+.tl-item:last-child{border-bottom:none;}
+.tl-time{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;width:52px;flex-shrink:0;padding-top:2px;color:var(--ink-soft);}
+.tl-dot-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.tl-dot{width:11px;height:11px;border-radius:50%;margin-top:5px;border:2px solid var(--card);box-shadow:0 0 0 1.5px var(--line);}
+.tl-body{flex:1;}
+.tl-title{font-weight:700;font-size:14.5px;}
+.tl-sub{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+
+/* client detail */
+.back-link{font-size:13px;color:var(--ink-soft);cursor:pointer;display:inline-flex;gap:5px;align-items:center;margin-bottom:14px;}
+.back-link:hover{color:var(--ink);}
+.avatar{
+  width:52px;height:52px;border-radius:50%;background:var(--yellow);
+  display:flex;align-items:center;justify-content:center;font-family:'Archivo',sans-serif;
+  font-weight:800;font-size:19px;color:var(--yellow-ink);flex-shrink:0;
+}
+.cd-head{display:flex;gap:16px;align-items:center;margin-bottom:20px;}
+.cd-name{font-size:20px;margin:0;}
+.cd-meta{font-size:13px;color:var(--ink-soft);margin-top:3px;}
+.kpi-row{display:flex;gap:26px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:16px 0;}
+.kpi{}
+.kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-faint);font-weight:600;}
+.kpi-val{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;margin-top:3px;}
+
+/* assistant */
+.chat-wrap{max-width:640px;}
+.chat-log{display:flex;flex-direction:column;gap:12px;margin-bottom:16px;min-height:120px;}
+.msg{max-width:78%;padding:11px 14px;border-radius:14px;font-size:14px;line-height:1.45;}
+.msg.user{align-self:flex-end;background:var(--ink);color:#fff;border-bottom-right-radius:4px;}
+.msg.bot{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-left-radius:4px;}
+.msg.bot b{font-family:'IBM Plex Mono',monospace;}
+.quick-qs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.chip{
+  font-size:12.5px;padding:7px 12px;border-radius:20px;border:1px solid var(--line);
+  background:var(--card);cursor:pointer;font-weight:500;
+}
+.chip:hover{background:var(--paper-dim);}
+.chat-input{display:flex;gap:8px;}
+.chat-input input{
+  flex:1;padding:11px 14px;border-radius:10px;border:1px solid var(--line);
+  font-family:'Inter',sans-serif;font-size:14px;background:var(--card);
+}
+.chat-input input:focus{outline:2px solid var(--yellow);outline-offset:-1px;}
+
+/* mobile bottom nav */
+.bottom-nav{display:none;}
+
+@media (max-width: 860px){
+  .grid-4{grid-template-columns:repeat(2,1fr);}
+  .grid-2{grid-template-columns:1fr;}
+  .kanban{grid-template-columns:repeat(2,1fr);}
+}
+@media (max-width: 720px){
+  .sidebar{display:none;}
+  .main{padding:20px 16px 90px;}
+  .kanban{grid-template-columns:1fr;}
+  .bottom-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;
+    background:var(--ink);padding:8px 4px 10px;
+    justify-content:space-around;z-index:50;
+    border-top:1px solid rgba(255,255,255,0.08);
+  }
+  .bn-item{
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    color:#8B9A8C;font-size:10px;background:none;border:none;font-family:'Inter',sans-serif;font-weight:600;
+  }
+  .bn-item svg{width:19px;height:19px;}
+  .bn-item.active{color:var(--yellow);}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ================= SIDEBAR ================= -->
+  <nav class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">G</span>
+      <span class="brand-name">GInova</span>
+    </div>
+    <div class="brand-tag">Sistema operacional do pequeno negócio</div>
+
+    <button class="navitem active" data-view="dashboard" onclick="nav('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+      Início
+    </button>
+    <button class="navitem" data-view="clientes" onclick="nav('clientes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><path d="M16 8.2a3 3 0 1 1 3.4 3M17 14c2.8.3 4.5 2.3 4.5 5.5"/></svg>
+      Clientes
+    </button>
+    <button class="navitem" data-view="servicos" onclick="nav('servicos')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></svg>
+      Serviços
+    </button>
+    <button class="navitem" data-view="orcamentos" onclick="nav('orcamentos')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3.5h9l4 4V19a1.3 1.3 0 0 1-1.3 1.3H6A1.3 1.3 0 0 1 4.7 19V4.8A1.3 1.3 0 0 1 6 3.5Z"/><path d="M14.5 3.5V8h4.5M8 13h8M8 16.3h5"/></svg>
+      Orçamentos
+    </button>
+    <button class="navitem" data-view="agenda" onclick="nav('agenda')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="4.5" width="17" height="16" rx="2"/><path d="M3.5 9.5h17M8 3v3M16 3v3"/><circle cx="8.3" cy="13.5" r="1"/><circle cx="12" cy="13.5" r="1"/><circle cx="15.7" cy="13.5" r="1"/></svg>
+      Agenda
+    </button>
+    <button class="navitem" data-view="financeiro" onclick="nav('financeiro')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="6.5" width="19" height="12.5" rx="2.2"/><path d="M2.5 10.5h19"/><circle cx="7" cy="14.6" r="1"/></svg>
+      Financeiro
+    </button>
+
+    <div class="nav-group-label">Fases seguintes</div>
+    <button class="navitem disabled">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 6 9 17l-5-5"/></svg>
+      Estoque <span class="soon">Fase 3</span>
+    </button>
+    <button class="navitem disabled">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 11.5a8.5 8.5 0 1 1-3.8-7.1"/><path d="M21 4v6h-6"/></svg>
+      WhatsApp <span class="soon">Fase 2</span>
+    </button>
+
+    <div class="nav-group-label">Você</div>
+    <button class="navitem" data-view="assistente" onclick="nav('assistente')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="4" width="16" height="12" rx="2.5"/><path d="M9 20h6M12 16v4"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/></svg>
+      Assistente
+    </button>
+
+    <div class="sidebar-foot">MEI · Elétrica JR<br>Plano PRO</div>
+  </nav>
+
+  <!-- ================= MAIN ================= -->
+  <main class="main">
+
+    <!-- ---------- DASHBOARD ---------- -->
+    <section class="view active" id="view-dashboard">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Terça-feira, 18 de agosto</div>
+          <h1 class="pagetitle">Bom dia, João 👋</h1>
+          <div class="pagesub">Aqui está o que precisa da sua atenção hoje.</div>
+        </div>
+      </div>
+
+      <div class="wa-card">
+        <div class="wa-left">
+          <div class="wa-icon">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1E2A22" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 1 1-3.8-7.1"/><path d="M21 4v6h-6"/></svg>
+          </div>
+          <div>
+            <div class="wa-title">Novo pedido identificado no WhatsApp</div>
+            <div class="wa-quote">"Oi, queria orçamento pra instalar 3 ventiladores essa semana"</div>
+            <div class="wa-sub">Rafael Torres · recebido às 07:42</div>
+          </div>
+        </div>
+        <div class="wa-actions">
+          <button class="btn btn-ghost btn-sm" style="border-color:rgba(255,255,255,0.25);color:#fff;">Ver conversa</button>
+          <button class="btn btn-yellow btn-sm" onclick="nav('orcamentos')">Criar orçamento</button>
+        </div>
+      </div>
+
+      <div class="grid-4" style="margin-bottom:20px;">
+        <div class="ticket stat-ticket">
+          <div class="stat-label">Recebido hoje</div>
+          <div class="stat-value pos mono">R$ 1.280</div>
+          <div class="stat-foot">2 pagamentos via Pix</div>
+        </div>
+        <div class="ticket stat-ticket">
+          <div class="stat-label">A receber</div>
+          <div class="stat-value neu mono">R$ 1.450</div>
+          <div class="stat-foot">R$ 720 já vencido</div>
+        </div>
+        <div class="ticket stat-ticket">
+          <div class="stat-label">Serviços hoje</div>
+          <div class="stat-value neu mono">4</div>
+          <div class="stat-foot">1 concluído até agora</div>
+        </div>
+        <div class="ticket stat-ticket">
+          <div class="stat-label">Cobranças pendentes</div>
+          <div class="stat-value neg mono">2</div>
+          <div class="stat-foot">1 vencida há 3 dias</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card" style="padding:18px 20px;">
+          <div class="section-head"><h3>Alertas</h3></div>
+          <div class="alert-row">
+            <div class="alert-dot" style="background:var(--red);"></div>
+            <div>
+              <div class="alert-text"><b>Carlos Eduardo</b> possui uma cobrança vencida de <b>R$ 720</b>.</div>
+              <div class="alert-meta">Venceu em 15/08 · 3 dias de atraso</div>
+            </div>
+          </div>
+          <div class="alert-row">
+            <div class="alert-dot" style="background:var(--yellow);"></div>
+            <div>
+              <div class="alert-text"><b>Ana Beatriz</b> ainda não respondeu ao orçamento de instalação.</div>
+              <div class="alert-meta">Enviado há 2 dias · sugerir follow-up</div>
+            </div>
+          </div>
+          <div class="alert-row">
+            <div class="alert-dot" style="background:var(--green);"></div>
+            <div>
+              <div class="alert-text">Seu faturamento está <b>12% acima</b> da média dos últimos 30 dias.</div>
+              <div class="alert-meta">Comparado às últimas 4 semanas</div>
+            </div>
+          </div>
+          <div class="alert-row">
+            <div class="alert-dot" style="background:var(--blue);"></div>
+            <div>
+              <div class="alert-text">Instalação de ar-condicionado é o serviço que mais vende este mês.</div>
+              <div class="alert-meta">8 serviços concluídos</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:18px 20px;">
+          <div class="section-head"><h3>Agenda de hoje</h3><span class="badge b-grey">4 compromissos</span></div>
+          <div class="timeline">
+            <div class="tl-item">
+              <div class="tl-time">08:00</div>
+              <div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--green);"></div></div>
+              <div class="tl-body"><div class="tl-title">João da Silva</div><div class="tl-sub">Instalação de ar-condicionado · concluído</div></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-time">10:30</div>
+              <div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--blue);"></div></div>
+              <div class="tl-body"><div class="tl-title">Maria Fernandes</div><div class="tl-sub">Manutenção preventiva · em andamento</div></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-time">14:00</div>
+              <div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--ink-faint);"></div></div>
+              <div class="tl-body"><div class="tl-title">Carlos Eduardo</div><div class="tl-sub">Entrega de peça · agendado</div></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-time">16:30</div>
+              <div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--ink-faint);"></div></div>
+              <div class="tl-body"><div class="tl-title">Ana Beatriz</div><div class="tl-sub">Visita para orçamento · agendado</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- CLIENTES ---------- -->
+    <section class="view" id="view-clientes">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Cadastro</div>
+          <h1 class="pagetitle">Clientes</h1>
+          <div class="pagesub">4 clientes · R$ 900 em aberto no total</div>
+        </div>
+        <button class="btn btn-primary">+ Novo cliente</button>
+      </div>
+
+      <div class="card">
+        <table>
+          <thead><tr><th>Cliente</th><th>Último serviço</th><th>Total comprado</th><th>Em aberto</th><th></th></tr></thead>
+          <tbody>
+            <tr class="clickable" onclick="openClient()">
+              <td><div class="avatar" style="width:34px;height:34px;font-size:13px;display:inline-flex;vertical-align:middle;margin-right:10px;">JS</div><span class="cell-name">João da Silva</span></td>
+              <td>Instalação · 20/08</td>
+              <td class="mono">R$ 1.080</td>
+              <td class="mono" style="color:var(--red);">R$ 180</td>
+              <td><span class="badge b-yellow"><span class="dot" style="background:var(--yellow-ink);"></span>Pendente</span></td>
+            </tr>
+            <tr class="clickable">
+              <td><div class="avatar" style="width:34px;height:34px;font-size:13px;display:inline-flex;vertical-align:middle;margin-right:10px;background:var(--blue-bg);color:var(--blue);">MF</div><span class="cell-name">Maria Fernandes</span></td>
+              <td>Manutenção · 21/08</td>
+              <td class="mono">R$ 280</td>
+              <td class="mono">R$ 0</td>
+              <td><span class="badge b-green"><span class="dot" style="background:var(--green);"></span>Em dia</span></td>
+            </tr>
+            <tr class="clickable">
+              <td><div class="avatar" style="width:34px;height:34px;font-size:13px;display:inline-flex;vertical-align:middle;margin-right:10px;background:var(--red-bg);color:var(--red);">CE</div><span class="cell-name">Carlos Eduardo</span></td>
+              <td>Entrega · 25/08</td>
+              <td class="mono">R$ 720</td>
+              <td class="mono" style="color:var(--red);">R$ 720</td>
+              <td><span class="badge b-red"><span class="dot" style="background:var(--red);"></span>Vencido</span></td>
+            </tr>
+            <tr class="clickable">
+              <td><div class="avatar" style="width:34px;height:34px;font-size:13px;display:inline-flex;vertical-align:middle;margin-right:10px;background:#F8E3EA;color:var(--rose-ink);">AB</div><span class="cell-name">Ana Beatriz</span></td>
+              <td>— sem serviços ainda</td>
+              <td class="mono">R$ 0</td>
+              <td class="mono">R$ 0</td>
+              <td><span class="badge b-rose"><span class="dot" style="background:var(--rose-ink);"></span>Orçamento enviado</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- CLIENTE DETALHE ---------- -->
+    <section class="view" id="view-clienteDetail">
+      <span class="back-link" onclick="nav('clientes')">← Voltar para clientes</span>
+      <div class="cd-head">
+        <div class="avatar">JS</div>
+        <div>
+          <h2 class="cd-name">João da Silva</h2>
+          <div class="cd-meta">(47) 99123-4567 · cliente desde 10/05/2025</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;">
+          <button class="btn btn-ghost">Enviar WhatsApp</button>
+          <button class="btn btn-primary">Novo orçamento</button>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-label">Total comprado</div><div class="kpi-val">R$ 1.080</div></div>
+        <div class="kpi"><div class="kpi-label">Pago</div><div class="kpi-val" style="color:var(--green);">R$ 900</div></div>
+        <div class="kpi"><div class="kpi-label">Em aberto</div><div class="kpi-val" style="color:var(--red);">R$ 180</div></div>
+      </div>
+
+      <div class="section-head"><h3>Histórico de serviços</h3></div>
+      <div class="card" style="padding:6px 20px;margin-bottom:20px;">
+        <table>
+          <tbody>
+            <tr><td class="mono" style="width:90px;color:var(--ink-faint);">20/08</td><td class="cell-name">Instalação de ar-condicionado</td><td class="mono" style="text-align:right;">R$ 450</td></tr>
+            <tr><td class="mono" style="width:90px;color:var(--ink-faint);">02/07</td><td class="cell-name">Manutenção preventiva</td><td class="mono" style="text-align:right;">R$ 180</td></tr>
+            <tr><td class="mono" style="width:90px;color:var(--ink-faint);">10/05</td><td class="cell-name">Instalação de ar-condicionado</td><td class="mono" style="text-align:right;">R$ 450</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-head"><h3>Conversas (WhatsApp)</h3></div>
+      <div class="card" style="padding:16px 20px;">
+        <div style="font-size:13.5px;color:var(--ink-soft);">"Você consegue instalar meu ar-condicionado sexta? Quanto fica?" — 19/08, 18:32</div>
+      </div>
+    </section>
+
+    <!-- ---------- SERVIÇOS ---------- -->
+    <section class="view" id="view-servicos">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Cadastro</div>
+          <h1 class="pagetitle">Serviços</h1>
+          <div class="pagesub">Preços, custos e margem de cada serviço que você oferece</div>
+        </div>
+        <button class="btn btn-primary">+ Novo serviço</button>
+      </div>
+
+      <div class="card">
+        <table>
+          <thead><tr><th>Serviço</th><th>Preço</th><th>Custo estimado</th><th>Lucro estimado</th><th>Duração</th></tr></thead>
+          <tbody>
+            <tr><td class="cell-name">Instalação de ar-condicionado</td><td class="mono">R$ 450</td><td class="mono" style="color:var(--ink-soft);">R$ 150</td><td class="mono" style="color:var(--green);">R$ 300</td><td>2h</td></tr>
+            <tr><td class="cell-name">Manutenção preventiva</td><td class="mono">R$ 180</td><td class="mono" style="color:var(--ink-soft);">R$ 40</td><td class="mono" style="color:var(--green);">R$ 140</td><td>1h</td></tr>
+            <tr><td class="cell-name">Instalação de ventilador</td><td class="mono">R$ 120</td><td class="mono" style="color:var(--ink-soft);">R$ 30</td><td class="mono" style="color:var(--green);">R$ 90</td><td>45min</td></tr>
+            <tr><td class="cell-name">Entrega / troca de peça</td><td class="mono">R$ 90</td><td class="mono" style="color:var(--ink-soft);">R$ 20</td><td class="mono" style="color:var(--green);">R$ 70</td><td>30min</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- ORÇAMENTOS ---------- -->
+    <section class="view" id="view-orcamentos">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Vendas</div>
+          <h1 class="pagetitle">Orçamentos</h1>
+          <div class="pagesub">Do pedido no WhatsApp até a aprovação</div>
+        </div>
+        <button class="btn btn-primary">+ Novo orçamento</button>
+      </div>
+
+      <div class="kanban">
+        <div>
+          <div class="kcol-head">Rascunho <span>1</span></div>
+          <div class="kcard">
+            <div class="kname">Rafael Torres</div>
+            <div class="kserv">3x Instalação de ventilador</div>
+            <div class="kval">R$ 360</div>
+            <div class="kmeta">Detectado via WhatsApp · 07:42</div>
+          </div>
+        </div>
+        <div>
+          <div class="kcol-head">Enviado <span>1</span></div>
+          <div class="kcard">
+            <div class="kname">Ana Beatriz</div>
+            <div class="kserv">Instalação de ar-condicionado</div>
+            <div class="kval">R$ 450</div>
+            <div class="kmeta">Aguardando resposta · 2 dias</div>
+          </div>
+        </div>
+        <div>
+          <div class="kcol-head">Aprovado <span>1</span></div>
+          <div class="kcard">
+            <div class="kname">Carlos Eduardo</div>
+            <div class="kserv">Manutenção preventiva</div>
+            <div class="kval">R$ 180</div>
+            <div class="kmeta">Virou OS 000126</div>
+          </div>
+        </div>
+        <div>
+          <div class="kcol-head">Recusado <span>0</span></div>
+          <div style="font-size:12.5px;color:var(--ink-faint);padding:8px 4px;">Nenhum neste mês</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- AGENDA ---------- -->
+    <section class="view" id="view-agenda">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Operação</div>
+          <h1 class="pagetitle">Agenda</h1>
+          <div class="pagesub">Terça-feira, 18 de agosto</div>
+        </div>
+        <button class="btn btn-primary">+ Agendar</button>
+      </div>
+
+      <div class="card" style="padding:8px 20px;">
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-time">08:00</div>
+            <div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--green);"></div></div>
+            <div class="tl-body">
+              <div class="tl-title">João da Silva — Instalação de ar-condicionado</div>
+              <div class="tl-sub">R$ 450 · Rua das Palmeiras, 120</div>
+            </div>
+            <span class="badge b-green">Concluído</span>
+          </div>
+          <div class="tl-item">
+            <div class="tl-time">10:30</div>
+            <div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--blue);"></div></div>
+            <div class="tl-body">
+              <div class="tl-title">Maria Fernandes — Manutenção preventiva</div>
+              <div class="tl-sub">R$ 180 · Av. Brasil, 900</div>
+            </div>
+            <span class="badge b-blue">Em andamento</span>
+          </div>
+          <div class="tl-item">
+            <div class="tl-time">14:00</div>
+            <div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--ink-faint);"></div></div>
+            <div class="tl-body">
+              <div class="tl-title">Carlos Eduardo — Entrega de peça</div>
+              <div class="tl-sub">Sem cobrança · Rua Sete, 45</div>
+            </div>
+            <span class="badge b-grey">Agendado</span>
+          </div>
+          <div class="tl-item">
+            <div class="tl-time">16:30</div>
+            <div class="tl-dot-wrap"><div class="tl-dot" style="background:var(--ink-faint);"></div></div>
+            <div class="tl-body">
+              <div class="tl-title">Ana Beatriz — Visita para orçamento</div>
+              <div class="tl-sub">Instalação de ar-condicionado · Centro</div>
+            </div>
+            <span class="badge b-grey">Agendado</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- FINANCEIRO ---------- -->
+    <section class="view" id="view-financeiro">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">Dinheiro</div>
+          <h1 class="pagetitle">Financeiro</h1>
+          <div class="pagesub">Contas a receber, a pagar e resumo do mês</div>
+        </div>
+      </div>
+
+      <div class="grid-4" style="margin-bottom:20px;">
+        <div class="ticket stat-ticket"><div class="stat-label">Faturamento (mês)</div><div class="stat-value neu mono">R$ 6.240</div></div>
+        <div class="ticket stat-ticket"><div class="stat-label">Recebido (mês)</div><div class="stat-value pos mono">R$ 5.340</div></div>
+        <div class="ticket stat-ticket"><div class="stat-label">A receber</div><div class="stat-value neu mono">R$ 1.450</div></div>
+        <div class="ticket stat-ticket"><div class="stat-label">Vencido</div><div class="stat-value neg mono">R$ 720</div></div>
+      </div>
+
+      <div class="section-head"><h3>Contas a receber</h3></div>
+      <div class="card" style="margin-bottom:22px;">
+        <table>
+          <thead><tr><th>Cliente</th><th>Valor</th><th>Vencimento</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="cell-name">João da Silva</td><td class="mono">R$ 450</td><td>20/08</td>
+              <td><span class="badge b-yellow"><span class="dot" style="background:var(--yellow-ink);"></span>Pendente</span></td>
+              <td><button class="btn btn-ghost btn-sm">Cobrar</button></td>
+            </tr>
+            <tr>
+              <td class="cell-name">Maria Fernandes</td><td class="mono">R$ 280</td><td>21/08</td>
+              <td><span class="badge b-green"><span class="dot" style="background:var(--green);"></span>Pago</span></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="cell-name">Carlos Eduardo</td><td class="mono">R$ 720</td><td>15/08</td>
+              <td><span class="badge b-red"><span class="dot" style="background:var(--red);"></span>Vencido</span></td>
+              <td><button class="btn btn-yellow btn-sm">Cobrar agora</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- ASSISTENTE ---------- -->
+    <section class="view" id="view-assistente">
+      <div class="topline">
+        <div>
+          <div class="eyebrow">IA</div>
+          <h1 class="pagetitle">Assistente</h1>
+          <div class="pagesub">Pergunte sobre seu negócio em linguagem natural</div>
+        </div>
+      </div>
+
+      <div class="chat-wrap">
+        <div class="quick-qs">
+          <button class="chip" onclick="ask('Quanto tenho para receber?')">Quanto tenho para receber?</button>
+          <button class="chip" onclick="ask('Quem está atrasado?')">Quem está atrasado?</button>
+          <button class="chip" onclick="ask('Quanto vendi esse mês?')">Quanto vendi esse mês?</button>
+          <button class="chip" onclick="ask('Qual serviço vende mais?')">Qual serviço vende mais?</button>
+        </div>
+        <div class="chat-log" id="chatLog"></div>
+        <div class="chat-input">
+          <input type="text" id="chatInput" placeholder="Digite ou toque no microfone para falar..." onkeydown="if(event.key==='Enter'){ask(document.getElementById('chatInput').value)}">
+          <button class="btn btn-primary" onclick="ask(document.getElementById('chatInput').value)">Enviar</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ================= MOBILE BOTTOM NAV ================= -->
+<nav class="bottom-nav">
+  <button class="bn-item active" data-view="dashboard" onclick="nav('dashboard')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+    Início
+  </button>
+  <button class="bn-item" data-view="clientes" onclick="nav('clientes')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/></svg>
+    Clientes
+  </button>
+  <button class="bn-item" data-view="agenda" onclick="nav('agenda')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="4.5" width="17" height="16" rx="2"/><path d="M3.5 9.5h17M8 3v3M16 3v3"/></svg>
+    Agenda
+  </button>
+  <button class="bn-item" data-view="financeiro" onclick="nav('financeiro')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2.5" y="6.5" width="19" height="12.5" rx="2.2"/><path d="M2.5 10.5h19"/></svg>
+    Financ.
+  </button>
+  <button class="bn-item" data-view="assistente" onclick="nav('assistente')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="4" width="16" height="12" rx="2.5"/><path d="M9 20h6M12 16v4"/></svg>
+    IA
+  </button>
+</nav>
+
+<script>
+function nav(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  document.querySelectorAll('.navitem[data-view], .bn-item[data-view]').forEach(b=>{
+    b.classList.toggle('active', b.dataset.view === view);
+  });
+  window.scrollTo(0,0);
+}
+function openClient(){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-clienteDetail').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+const answers = {
+  'quanto tenho para receber?': 'Você tem <b>R$ 1.450,00</b> para receber, sendo <b>R$ 720,00</b> já vencidos (Carlos Eduardo).',
+  'quem está atrasado?': '1 cliente está atrasado: <b>Carlos Eduardo</b>, R$ 720,00 desde 15/08 (3 dias).',
+  'quanto vendi esse mês?': 'Você vendeu <b>R$ 6.240,00</b> em serviços concluídos até agora este mês.',
+  'qual serviço vende mais?': '<b>Instalação de ar-condicionado</b>, com 8 serviços concluídos este mês.'
+};
+
+function ask(question){
+  question = (question || '').trim();
+  if(!question) return;
+  const log = document.getElementById('chatLog');
+
+  const userMsg = document.createElement('div');
+  userMsg.className = 'msg user';
+  userMsg.textContent = question;
+  log.appendChild(userMsg);
+
+  const key = question.toLowerCase();
+  const answer = answers[key] || 'Ainda estou aprendendo a responder perguntas livres neste protótipo — mas na versão real, o módulo IA_ASSISTENTE consultaria seus dados financeiros, de agenda e clientes para te responder na hora.';
+
+  const botMsg = document.createElement('div');
+  botMsg.className = 'msg bot';
+  botMsg.innerHTML = answer;
+  log.appendChild(botMsg);
+
+  document.getElementById('chatInput').value = '';
+  log.scrollTop = log.scrollHeight;
+}
+</script>
+
+</body>
+</html>
