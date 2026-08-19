@@ -1,6 +1,7 @@
 const express = require('express');
 const { z } = require('zod');
 const { withTenant } = require('../common/db');
+const { marcarContasVencidas } = require('../common/vencimentos');
 const { ApiError } = require('../common/apiError');
 const { requireAuth, requirePermission } = require('../auth/authMiddleware');
 
@@ -13,6 +14,8 @@ router.use(requireAuth);
 router.get('/resumo', requirePermission('financeiro.visualizar'), async (req, res, next) => {
   try {
     const data = await withTenant(req.auth.empresaId, async (client) => {
+      await marcarContasVencidas(client);
+
       const [recebidoHoje, aReceber, vencido, faturamentoMes, recebidoMes, cobrancasPendentes, servicosHoje] =
         await Promise.all([
           client.query(`
@@ -37,11 +40,6 @@ router.get('/resumo', requirePermission('financeiro.visualizar'), async (req, re
             select count(*) as total from agendamentos
              where data_hora::date = current_date and status <> 'cancelado' and deleted_at is null`),
         ]);
-
-      // marca como vencido quem passou do prazo e ainda está pendente (idealmente rodaria num job agendado)
-      await client.query(`
-        update contas_receber set status = 'vencido'
-         where status = 'pendente' and vencimento < current_date and deleted_at is null`);
 
       return {
         recebido_hoje: Number(recebidoHoje.rows[0].total),

@@ -11,7 +11,12 @@ const orcamentosRoutes = require('./orcamentos/orcamentosRoutes');
 const agendaRoutes = require('./agenda/agendaRoutes');
 const financeiroRoutes = require('./financeiro/financeiroRoutes');
 const dashboardRoutes = require('./dashboard/dashboardRoutes');
-// próximas fases (ver README): estoque, whatsapp, ia, notificacoes, assinaturas
+const webhookRoutes = require('./whatsapp/webhookRoutes');
+const interacoesRoutes = require('./whatsapp/interacoesRoutes');
+const assistenteRoutes = require('./assistente/assistenteRoutes');
+const fornecedoresRoutes = require('./fornecedores/fornecedoresRoutes');
+const produtosRoutes = require('./produtos/produtosRoutes');
+// próximas fases (ver README): notificacoes, assinaturas
 
 const app = express();
 
@@ -31,6 +36,11 @@ app.use('/api/v1/orcamentos', orcamentosRoutes);
 app.use('/api/v1/agenda', agendaRoutes);
 app.use('/api/v1/financeiro', financeiroRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/webhooks', webhookRoutes);
+app.use('/api/v1/whatsapp', interacoesRoutes);
+app.use('/api/v1/assistente', assistenteRoutes);
+app.use('/api/v1/fornecedores', fornecedoresRoutes);
+app.use('/api/v1/produtos', produtosRoutes);
 
 app.use((req, res, next) => {
   res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Rota não encontrada.' } });

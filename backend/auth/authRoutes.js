@@ -65,6 +65,8 @@ router.post('/registrar', async (req, res, next) => {
       'financeiro.visualizar', 'financeiro.criar', 'financeiro.editar', 'financeiro.excluir',
       'orcamento.criar', 'orcamento.aprovar',
       'agenda.gerenciar',
+      'ia.executar',
+      'estoque.visualizar', 'estoque.movimentar',
     ];
 
     const vinculo = await client.query(

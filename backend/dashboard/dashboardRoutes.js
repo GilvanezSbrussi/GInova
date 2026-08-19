@@ -1,5 +1,6 @@
 const express = require('express');
 const { withTenant } = require('../common/db');
+const { marcarContasVencidas } = require('../common/vencimentos');
 const { requireAuth } = require('../auth/authMiddleware');
 
 const router = express.Router();
@@ -9,14 +10,11 @@ router.use(requireAuth);
 router.get('/', async (req, res, next) => {
   try {
     const data = await withTenant(req.auth.empresaId, async (client) => {
-      // marca contas vencidas antes de calcular qualquer coisa (mesma lógica do resumo financeiro)
-      await client.query(`
-        update contas_receber set status = 'vencido'
-         where status = 'pendente' and vencimento < current_date and deleted_at is null`);
+      await marcarContasVencidas(client);
 
       const [
         recebidoHoje, aReceber, cobrancasVencidas, servicosHoje,
-        orcamentosAguardando, faturamentoHoje, faturamentoMedio30d,
+        orcamentosAguardando, faturamentoHoje, faturamentoMedio30d, produtosEstoqueBaixo,
       ] = await Promise.all([
         client.query(`
           select coalesce(sum(valor),0) as total from pagamentos
@@ -54,9 +52,22 @@ router.get('/', async (req, res, next) => {
                and deleted_at is null
              group by created_at::date
           ) diario`),
+        client.query(`
+          select id, nome, estoque_atual, estoque_minimo from produtos
+           where estoque_atual <= estoque_minimo and ativo = true and deleted_at is null
+           order by nome asc`),
       ]);
 
       const alertas = [];
+
+      for (const p of produtosEstoqueBaixo.rows) {
+        alertas.push({
+          tipo: 'estoque_baixo',
+          severidade: 'media',
+          mensagem: `${p.nome} está com estoque baixo (${p.estoque_atual} restantes, mínimo é ${p.estoque_minimo}).`,
+          meta: { produto_id: p.id, estoque_atual: p.estoque_atual, estoque_minimo: p.estoque_minimo },
+        });
+      }
 
       for (const c of cobrancasVencidas.rows) {
         alertas.push({
